@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     if(type.compare("bgr")==0)
     {
         output_file_name+="bgr.txt";
+	printf("output_file_name=%s\n",output_file_name.c_str()); 
         FILE* output_file = fopen(output_file_name.c_str(), "wt");
         for(int row=0;row<mat.rows;row++)
         {
@@ -44,18 +45,28 @@ int main(int argc, char **argv) {
         fclose(output_file);
     }else if(type.compare("nv12")==0)
     {
-        output_file_name+="nv12.txt";
-        FILE* output_file = fopen(output_file_name.c_str(), "wt");
-        cv::Mat yuv_mat(mat.rows*3/2,mat.cols,CV_8UC1);
+	int w=(mat.cols+1)/2*2;
+	int h=mat.rows;
+	if(w!=mat.cols)
+	{
+	   cv::Mat dst; 
+	   cv::resize(mat, dst, cv::Size(w, h));
+	   mat=dst;
+           output_file_name=std::to_string(mat.cols)+"x"+std::to_string(mat.rows);
+	}
+        cv::Mat yuv_mat(h*3/2,w,CV_8UC1);
         cv::cvtColor(mat,yuv_mat,cv::COLOR_BGR2YUV_IYUV);
-        for(int row=0;row<mat.rows;row++)
+        output_file_name+="nv12.txt";
+	printf("output_file_name=%s\n",output_file_name.c_str()); 
+        FILE* output_file = fopen(output_file_name.c_str(), "wt");
+        for(int row=0;row<h;row++)
         {
             //save Y
-            for(int cols=0;cols<mat.cols;cols++)
+            for(int cols=0;cols<w;cols++)
             {
                 std::string str_v=std::to_string(yuv_mat.at<uchar>(row,cols));
                 fprintf(output_file,"%s",str_v.c_str());
-                if(cols!=mat.cols-1)
+                if(cols!=w-1)
                 {
                     fprintf(output_file," ");
                 }else
@@ -64,19 +75,19 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        for(int row=mat.rows;row<mat.rows*5/4;row++)
+        for(int row=h;row<h*5/4;row++)
         {
             //save uv
-            for(int cols=0;cols<mat.cols;cols++)
+            for(int cols=0;cols<w;cols++)
             {
                 std::string str_v=std::to_string(yuv_mat.at<uchar>(row,cols));
                 fprintf(output_file,"%s ",str_v.c_str());
-                str_v=std::to_string(yuv_mat.at<uchar>(row+mat.rows/4,cols));
+                str_v=std::to_string(yuv_mat.at<uchar>(row+h/4,cols));
                 fprintf(output_file,"%s",str_v.c_str());
-                if(cols!=mat.cols/2-1&&cols!=mat.cols-1)
+                if(cols!=w/2-1&&cols!=w-1)
                 {
                     fprintf(output_file," ");
-                }else if(cols!=mat.cols-1||row!=mat.rows*5/4-1)
+                }else if(cols!=w-1||row!=h*5/4-1)
                 {
                     fprintf(output_file,"\n");
                 }
