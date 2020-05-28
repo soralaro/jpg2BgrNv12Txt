@@ -46,8 +46,8 @@ int main(int argc, char **argv) {
     }else if(type.compare("nv12")==0)
     {
 	int w=(mat.cols+1)/2*2;
-	int h=mat.rows;
-	if(w!=mat.cols)
+	int h=(mat.rows+3)/4*4;
+	if(w!=mat.cols||h!=mat.rows)
 	{
 	   cv::Mat dst; 
 	   cv::resize(mat, dst, cv::Size(w, h));
